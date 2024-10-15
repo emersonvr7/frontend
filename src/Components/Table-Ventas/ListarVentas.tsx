@@ -13,7 +13,7 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import { GET_ALL_VENTAS } from '../../Schema/Querys/Ventas/GetAllVentas';
 import { Venta } from '../../Typings/Table';
-import TablePaginationActions from '../Table-User/TablePaginationActions'; // Importación separada
+import TablePaginationActions from '../Table-User/TablePaginationActions'; 
 
 const ListarVentas: React.FC = () => {
   const { loading, error, data } = useQuery(GET_ALL_VENTAS);

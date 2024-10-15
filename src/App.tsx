@@ -20,10 +20,10 @@ function App() {
         <Toolbar>
           {/* Botones para cambiar entre Usuarios y Ventas */}
           <Button color="inherit" onClick={() => handleViewChange('usuarios')}>
-            Usuarios
+            Usuarios!
           </Button>
           <Button color="inherit" onClick={() => handleViewChange('ventas')}>
-            Ventas
+            Ventas!
           </Button>
         </Toolbar>
       </AppBar>
