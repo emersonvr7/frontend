@@ -1,7 +1,7 @@
-// src/components/UserDialog.tsx
 import * as React from 'react';
 import { useMutation } from '@apollo/client';
-import { CREATE_USER } from '../Schema/Mutations/CreateUser';
+import { CREATE_USER } from '../../Schema/Mutations/User/CreateUser';
+import { GET_ALL_USERS } from '../../Schema/Querys/GetAllUSers';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -11,7 +11,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Slide from '@mui/material/Slide';
 import TextField from '@mui/material/TextField';
 import { TransitionProps } from '@mui/material/transitions';
-import { UserDialogProps } from '../Typings/Dialog';
+import { UserDialogProps } from '../../Typings/Dialog';
+import { GetAllUsersResponse } from '../../Typings/GetAllUsersResponse'; // Asegúrate de definir el tipo
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -22,7 +23,7 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const UserDialog: React.FC<UserDialogProps> = ({ open, onClose }) => {
+const UserDialog: React.FC<UserDialogProps> = ({ open, onClose, onUserCreated }) => {
   const [name, setName] = React.useState('');
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -31,7 +32,20 @@ const UserDialog: React.FC<UserDialogProps> = ({ open, onClose }) => {
 
   const handleSubmit = async () => {
     try {
-      await createUser({ variables: { name, username, password } });
+      const { data } = await createUser({
+        variables: { name, username, password },
+        update: (cache, { data: { createUser } }) => {
+          // Especificar el tipo de retorno esperado
+          const { getAllUsers }: GetAllUsersResponse = cache.readQuery({ query: GET_ALL_USERS }) || { getAllUsers: [] };
+
+          // Actualizar el cache con el nuevo usuario
+          cache.writeQuery({
+            query: GET_ALL_USERS,
+            data: { getAllUsers: [...getAllUsers, createUser] },
+          });
+        }
+      });
+      onUserCreated(); // Llama a onUserCreated después de crear el usuario
       onClose(); // Cierra el diálogo después de crear el usuario
     } catch (err) {
       console.error(err);
