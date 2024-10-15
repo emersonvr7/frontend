@@ -1,24 +1,43 @@
 // src/Components/ListarVentas.tsx
 import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
+import TableContainer from '@mui/material/TableContainer';  
 import TableFooter from '@mui/material/TableFooter';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import { GET_ALL_VENTAS } from '../../Schema/Querys/Ventas/GetAllVentas';
 import { Venta } from '../../Typings/Table';
 import TablePaginationActions from '../Table-User/TablePaginationActions'; 
+import VentaDialog from './VentaDialog';
+import { toast } from 'react-toastify';
+import { TableHead } from '@mui/material';
+
 
 const ListarVentas: React.FC = () => {
   const { loading, error, data } = useQuery(GET_ALL_VENTAS);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const handleOpenDialog = () => setOpenDialog(true);
+  const handleCloseDialog = () =>setOpenDialog(false);
+
+
+  const ShowSuccess = () =>{
+    toast.success('Venta Creada Correctamente.', {
+      position: 'bottom-right',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true
+    });
+  };
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -34,8 +53,19 @@ const ListarVentas: React.FC = () => {
 
   return (
     <>
+    <Button sx={{ marginBottom: 2}} variant='contained' color= "primary" onClick={handleOpenDialog}>
+          New Venta
+        </Button>
       <TableContainer component={Paper}>
+        <VentaDialog open={openDialog} onClose={handleCloseDialog} onVentaCreated={ShowSuccess}/>
         <Table>
+          <TableHead>
+            <TableCell>Producto</TableCell>
+            <TableCell>Precio</TableCell>
+            <TableCell>Cantidad</TableCell>
+            <TableCell>Fecha</TableCell>
+            <TableCell>Usuario</TableCell>
+          </TableHead>
           <TableBody>
             {ventas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((venta) => (
               <TableRow key={venta.id}>
