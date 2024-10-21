@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { CREATE_VENTA } from '../../Schema/Mutations/Ventas/CreateVenta';
 import { GET_ALL_VENTAS } from '../../Schema/Querys/Ventas/GetAllVentas';
@@ -36,15 +36,13 @@ const VentaDialog: React.FC<VentaDialogProps> = ({ open, onClose, onVentaCreated
     const [cantidad, setCantidad] = React.useState('');
     const [user, setUser] = React.useState<string>('');
     const [qrCodeUrl, setQrCodeUrl] = React.useState<string>(''); // Estado para almacenar la URL del QR
+    const [ventaCreada, setVentaCreada] = React.useState<any>(null); // Estado para almacenar la venta creada
 
     const { data: usersData, loading: loadingUsers } = useQuery(GET_ALL_USERS);
 
     const [createVenta, { loading, error }] = useMutation(CREATE_VENTA);
 
     const [fecha, setFecha] = React.useState(new Date().toISOString().slice(0, 10)); // Fecha actual por defecto
-
-    const [facturaUrl, setFacturaUrl] = React.useState<string>(''); // Estado para almacenar la URL de la factura
-
 
     const handleSubmit = async () => {
         try {
@@ -65,20 +63,22 @@ const VentaDialog: React.FC<VentaDialogProps> = ({ open, onClose, onVentaCreated
                 }
             });
 
+            // Guardar los datos de la venta recién creada en el estado
+            setVentaCreada(data.createVenta);
+
             // Generar el QR usando la nueva venta creada
             const qrResponse = await fetch(`http://localhost:3002/generar-qr/${data.createVenta.id}`);
             const qrData = await qrResponse.text();
-            // Puedes extraer solo la parte de la imagen QR del HTML devuelto
+
+            // Extraer la URL del QR de la respuesta HTML
             const parser = new DOMParser();
             const htmlDocument = parser.parseFromString(qrData, 'text/html');
             const imgElement = htmlDocument.querySelector('img');
             if (imgElement) {
-                setQrCodeUrl(imgElement.src);
+                setQrCodeUrl(imgElement.src);  // Almacenar la URL del QR
             }
 
-            // Asignar la URL de la factura
-            setFacturaUrl(`http://localhost:3002/factura?id=${data.createVenta.id}`);
-
+            // Limpiar los campos después de crear la venta
             setProducto('');
             setPrecio('');
             setCantidad('');
@@ -91,9 +91,9 @@ const VentaDialog: React.FC<VentaDialogProps> = ({ open, onClose, onVentaCreated
         }
     };
 
-
     const handleCloseQrDialog = () => {
         setQrCodeUrl(''); // Resetea el QR al cerrar el diálogo
+        setVentaCreada(null); // Limpia la venta creada
         onClose();
     };
 
@@ -165,7 +165,7 @@ const VentaDialog: React.FC<VentaDialogProps> = ({ open, onClose, onVentaCreated
                     <Button onClick={handleSubmit}>Crear</Button>
                 </DialogActions>
             </Dialog>
-            {qrCodeUrl && (
+            {qrCodeUrl && ventaCreada && (
                 <Dialog
                     open={!!qrCodeUrl}
                     onClose={handleCloseQrDialog}
@@ -173,18 +173,18 @@ const VentaDialog: React.FC<VentaDialogProps> = ({ open, onClose, onVentaCreated
                     <DialogTitle>QR Generado</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
-                            Escanea el siguiente código QR para ver los detalles de la venta:
+                            Escanea el siguiente código QR para ver los detalles de la venta, o haz clic en el botón para ir directamente a la factura.
                         </DialogContentText>
-                        {qrCodeUrl && <img src={qrCodeUrl} alt="Código QR" />}
-                        {facturaUrl && (
-                            <a href={facturaUrl} target="_blank" rel="noopener noreferrer">
-                                <Button variant="contained" color="primary">
-                                    Ver Factura
-                                </Button>
-                            </a>
-                        )}
+                        <img src={qrCodeUrl} alt="Código QR" />
                     </DialogContent>
                     <DialogActions>
+                        {/* Botón para redirigir al detalle de la factura */}
+                        <Button 
+                            onClick={() => window.location.href = `/venta/${ventaCreada.id}`} 
+                            color="primary"
+                        >
+                            Ir a la Factura
+                        </Button>
                         <Button onClick={handleCloseQrDialog}>Cerrar</Button>
                     </DialogActions>
                 </Dialog>
