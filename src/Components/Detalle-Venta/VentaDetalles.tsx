@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Typography, Paper, CircularProgress, Grid } from '@mui/material';
+import { Container, Typography, Paper, CircularProgress, Grid, Divider, Box } from '@mui/material';
 import { useParams } from 'react-router-dom'; // Importa el hook useParams
 
 interface Venta {
@@ -54,32 +54,39 @@ const VentaDetalles: React.FC = () => {
 
     return (
         <Container>
-            <Paper elevation={3} sx={{ padding: '2rem', marginTop: '2rem' }}>
-                <Typography variant="h4" gutterBottom>
-                    ¡Hola! Su compra es la siguiente:
+            <Paper elevation={3} sx={{ padding: '2rem', marginTop: '2rem', maxWidth: '400px', margin: 'auto' }}>
+                <Typography variant="h4" gutterBottom align="center">
+                    Recibo de Venta
                 </Typography>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography variant="h6">Producto:</Typography>
-                        <Typography>{venta?.producto}</Typography>
+                <Divider sx={{ marginBottom: '1rem' }} />
+                <Box sx={{ padding: '1rem', border: '1px solid #ddd', borderRadius: '8px', background: '#f7f7f7' }}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                            <Typography variant="h6">Producto</Typography>
+                            <Typography>{venta?.producto}</Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Typography variant="h6">Precio</Typography>
+                            <Typography>${venta?.precio}</Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Typography variant="h6">Cantidad</Typography>
+                            <Typography>{venta?.cantidad}</Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Typography variant="h6">Fecha de compra</Typography>
+                            <Typography>{venta?.fecha}</Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Typography variant="h6">Comprado por</Typography>
+                            <Typography>{venta?.usuario}</Typography>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography variant="h6">Precio:</Typography>
-                        <Typography>${venta?.precio}</Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography variant="h6">Cantidad:</Typography>
-                        <Typography>{venta?.cantidad}</Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography variant="h6">Fecha de compra:</Typography>
-                        <Typography>{venta?.fecha}</Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Typography variant="h6">Comprado por:</Typography>
-                        <Typography>{venta?.usuario}</Typography>
-                    </Grid>
-                </Grid>
+                </Box>
+                <Divider sx={{ marginTop: '1rem', marginBottom: '1rem' }} />
+                <Typography align="center">
+                    ¡Gracias por su compra!
+                </Typography>
             </Paper>
         </Container>
     );
