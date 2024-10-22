@@ -5,7 +5,7 @@ import App from './App';
 
 // Configura el cliente Apollo para conectarse a tu API GraphQL
 const client = new ApolloClient({
-  uri: 'http://localhost:3002/graphql',  // Cambia a la URL de tu API GraphQL
+  uri: 'https://backend-b6yt.onrender.com/graphql',  // Cambia a la URL de tu API GraphQL
   cache: new InMemoryCache()
 });
 

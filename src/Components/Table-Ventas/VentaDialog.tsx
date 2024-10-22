@@ -67,7 +67,7 @@ const VentaDialog: React.FC<VentaDialogProps> = ({ open, onClose, onVentaCreated
             setVentaCreada(data.createVenta);
 
             // Generar el QR usando la nueva venta creada
-            const qrResponse = await fetch(`http://localhost:3002/generar-qr/${data.createVenta.id}`);
+            const qrResponse = await fetch(`https://backend-b6yt.onrender.com/generar-qr/${data.createVenta.id}`);
             const qrData = await qrResponse.text();
 
             // Extraer la URL del QR de la respuesta HTML
