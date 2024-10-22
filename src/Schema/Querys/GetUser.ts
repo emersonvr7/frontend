@@ -6,6 +6,10 @@ export const GET_USER = gql`
       id
       name
       username
+      password
+      createAt
+      salesCount
+      loyaty
     }
   }
 `;

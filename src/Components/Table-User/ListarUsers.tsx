@@ -1,6 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import Box from '@mui/material/Box';
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
+import TableHead from '@mui/material/TableHead';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
@@ -10,14 +13,20 @@ import TableContainer from '@mui/material/TableContainer';
 import TableFooter from '@mui/material/TableFooter';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { GET_ALL_USERS } from '../../Schema/Querys/GetAllUSers';
 import { DELETE_USER } from '../../Schema/Mutations/User/DeleteUser';
 import { User } from '../../Typings/Table';
-import TablePaginationActions from './TablePaginationActions'; // Importación separada
-import UserDialog from './UserDialog'; // Importación del diálogo
-import UserEditModal from './UserEditModal'; 
-import { toast } from 'react-toastify'; // Importación de react-toastify
-import 'react-toastify/dist/ReactToastify.css'; // Importar estilos de react-toastify
+import TablePaginationActions from './TablePaginationActions';
+import UserDialog from './UserDialog';
+import UserEditModal from './UserEditModal';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Typography } from '@mui/material';
+import { Bolt } from '@mui/icons-material';
+import dayjs from 'dayjs';
+
 
 
 const ListarUsers: React.FC = () => {
@@ -28,6 +37,7 @@ const ListarUsers: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [openRows, setOpenRows] = useState<{ [key: string]: boolean }>({});
 
   const handleOpenDialog = () => setOpenDialog(true);
   const handleCloseDialog = () => setOpenDialog(false);
@@ -47,6 +57,15 @@ const ListarUsers: React.FC = () => {
     setOpenEditModal(false);
   };
 
+  const toggleRow = (userId: string) => {
+    setOpenRows((prevOpenRows) => ({
+      ...prevOpenRows,
+      [userId]: !prevOpenRows[userId],
+    }));
+  }
+
+  const fechaf = dayjs().format("DD/MM/YYYY HH:mm:ss")
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
@@ -59,9 +78,8 @@ const ListarUsers: React.FC = () => {
     setPage(0);
   };
 
-  
 
-  // Función para mostrar la notificación de éxito
+
   const showSuccess = () => {
     toast.success('Usuario Creado! El usuario ha sido creado correctamente.', {
       position: "bottom-right",
@@ -76,14 +94,24 @@ const ListarUsers: React.FC = () => {
 
   // Función para eliminar un usuario
   const handleDeleteUser = async (id: string) => {
-  try {
-    const { data } = await deleteUser({
-      variables: { id },
-      refetchQueries: [{ query: GET_ALL_USERS }],
-    });
+    try {
+      const { data } = await deleteUser({
+        variables: { id },
+        refetchQueries: [{ query: GET_ALL_USERS }],
+      });
 
-    if (data.deleteUser) {
-      toast.success('Usuario eliminado correctamente', {
+      if (data.deleteUser) {
+        toast.success('Usuario eliminado correctamente', {
+          position: 'bottom-right',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    } catch (error) {
+      toast.error(`Error al eliminar usuario: ${error}`, {
         position: 'bottom-right',
         autoClose: 5000,
         hideProgressBar: false,
@@ -92,17 +120,10 @@ const ListarUsers: React.FC = () => {
         draggable: true,
       });
     }
-  } catch (error) {
-  toast.error(`Error al eliminar usuario: ${error}`, {
-      position: 'bottom-right',
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-  }
-};
+  };
+
+
+
 
 
 
@@ -110,9 +131,8 @@ const ListarUsers: React.FC = () => {
     <>
       <TableContainer component={Paper}>
         <Button variant="contained" color="primary" onClick={handleOpenDialog}>
-          New User 
+          New User
         </Button>
-        {/* Pasar showSuccess como prop para mostrar la notificación */}
         <UserDialog open={openDialog} onClose={handleCloseDialog} onUserCreated={showSuccess} />
         {selectedUserId && (
           <UserEditModal
@@ -122,36 +142,90 @@ const ListarUsers: React.FC = () => {
             onUserUpdated={handleUserUpdated}
           />
         )}
-        
-        <Table>
+
+        <Table arial-label="collapsible table">
           <TableBody>
+            <TableHead>
+              <TableCell />
+              <TableCell>Name</TableCell>
+              <TableCell>Username</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableHead>
             {users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.username}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleOpenEditModal(user.id)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => handleDeleteUser(user.id)}
-                    style={{ marginLeft: '10px' }}
-                  >
-                    Eliminar
-                  </Button>
-                </TableCell>
-              </TableRow>
+              <React.Fragment key={user.id}>
+                <TableRow>
+                  <TableCell>
+                    <IconButton
+                      arial-label="expand row"
+                      size="small"
+                      onClick={() => toggleRow(user.id)}
+                    >
+                      {openRows[user.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+
+                    </IconButton>
+                  </TableCell>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => handleOpenEditModal(user.id)}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => handleDeleteUser(user.id)}
+                      style={{ marginLeft: '10px' }}
+                    >
+                      Eliminar
+                    </Button>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={{ paddingBottom: 9, paddingTop: 0 }} colSpan={6} >
+                    <Collapse in={openRows[user.id]} timeout="auto" unmountOnExit>
+                      <Box margin={1}>
+                        <Typography variant="h6" gutterBottom component="div" style={{fontFamily: 'revert'}}>
+                          Detalles
+                        </Typography>
+                        <Table size='small' arial-label='purchases'>
+
+
+                          <TableHead>
+                            <TableCell>Nombre</TableCell>
+                            <TableCell>Fecha de cracion</TableCell>
+                          </TableHead>
+
+                          <TableBody />
+                 
+                    <TableRow key={user.id}>
+                      <TableCell component="th" scope="row">
+                        {user.name}
+                      </TableCell>
+                      <TableCell>{user.createAt}</TableCell>
+                      </TableRow>
+                        </Table>
+                      </Box>
+
+
+
+
+                    </Collapse>
+                  </TableCell>
+                </TableRow>
+
+              </React.Fragment>
+
+
+
             ))}
             {emptyRows > 0 && (
               <TableRow style={{ height: 53 * emptyRows }}>
                 <TableCell colSpan={6} />
-              </TableRow>
+              </TableRow> 
             )}
           </TableBody>
           <TableFooter>

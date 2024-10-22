@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Typography, Paper, CircularProgress, Grid, Divider, Box } from '@mui/material';
+import { Container, Typography, Paper, CircularProgress, Grid, Divider, Box, Checkbox, FormControlLabel, Button } from '@mui/material';
 import { useParams } from 'react-router-dom'; // Importa el hook useParams
 
 interface Venta {
@@ -9,15 +9,16 @@ interface Venta {
     cantidad: number;
     fecha: string;
     usuario: string;
+    userId: number; // Agregar userId para la actualización
 }
 
 const VentaDetalles: React.FC = () => {
-    // Usamos useParams para obtener el parámetro de la URL
     const { ventaId } = useParams<{ ventaId: string }>();
     
     const [venta, setVenta] = useState<Venta | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [isChecked, setIsChecked] = useState<boolean>(false); // Estado del checkbox
 
     useEffect(() => {
         const fetchVenta = async () => {
@@ -33,6 +34,19 @@ const VentaDetalles: React.FC = () => {
 
         fetchVenta();
     }, [ventaId]);
+
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setIsChecked(event.target.checked);
+    };
+
+    const handleSubmit = async () => {
+        try {
+            await axios.put(`http://localhost:3002/users/${venta?.userId}`, { loyalty: isChecked ? 3 : 0 });
+            alert('Estado de fidelización actualizado.');
+        } catch (error) {
+            alert('Error al actualizar el estado de fidelización.');
+        }
+    };
 
     if (loading) {
         return (
@@ -81,8 +95,17 @@ const VentaDetalles: React.FC = () => {
                             <Typography variant="h6">Comprado por</Typography>
                             <Typography>{venta?.usuario}</Typography>
                         </Grid>
+                        <Grid item xs={12}>
+                            <FormControlLabel
+                                control={<Checkbox checked={isChecked} onChange={handleCheckboxChange} />}
+                                label="Aceptar fidelización"
+                            />
+                        </Grid>
                     </Grid>
                 </Box>
+                <Button variant="contained" color="primary" onClick={handleSubmit}>
+                    Actualizar Fidelización
+                </Button>
                 <Divider sx={{ marginTop: '1rem', marginBottom: '1rem' }} />
                 <Typography align="center">
                     ¡Gracias por su compra!
