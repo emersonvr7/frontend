@@ -22,7 +22,7 @@ const VentaDetalles: React.FC = () => {
     useEffect(() => {
         const fetchVenta = async () => {
             try {
-                const response = await axios.get<Venta>(`https://backend-b6yt.onrender.com/factura/${ventaId}`);
+                const response = await axios.get<Venta>(`http://localhost:3002/factura/${ventaId}`);
                 setVenta(response.data);
             } catch (err) {
                 setError('Error al obtener los detalles de la venta');
